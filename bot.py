@@ -5,16 +5,20 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 
-# --- السيرفر الوهمي (لازم يكون موجود عشان Render) ---
+# 1. إعداد السيرفر الوهمي (ضروري جداً لموقع Render)
 app = Flask('')
 @app.route('/')
-def home(): return "Evie is Alive!"
-def run(): app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+def home():
+    return "Evie Bot is Online and Ready!"
+
+def run():
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
 def keep_alive():
     t = threading.Thread(target=run)
     t.start()
 
-# --- إعدادات البوت ---
+# 2. إعدادات البوت والردود
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 BOT_NAMES = ["ايفي", "إيفي", "evie"]
 
@@ -26,21 +30,31 @@ sarcastic_replies = [
     "هلا؟ ناديتني ولا مشتاق لصوتي؟ 😏"
 ]
 
-async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message or not update.message.text: return
-    text = update.message.text.lower()
-    # إذا ناديت اسمها
-    if any(name in text for name in BOT_NAMES):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message or not update.message.text:
+        return
+    
+    user_text = update.message.text.lower()
+    
+    # الرد إذا ذكر المستخدم اسم البوت
+    if any(name in user_text for name in BOT_NAMES):
         await update.message.reply_text(random.choice(sarcastic_replies))
 
+# 3. تشغيل البوت
 def main():
-    keep_alive() # تشغيل السيرفر
+    keep_alive() # تشغيل Flask في الخلفية
+    
     if not TOKEN:
-        print("Error: No TELEGRAM_TOKEN found!")
+        print("خطأ: لم يتم العثور على TELEGRAM_TOKEN في إعدادات Render")
         return
+
+    # بناء تطبيق تلجرام
     application = ApplicationBuilder().token(TOKEN).build()
-    application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle))
-    print("Evie Bot Started...")
+    
+    # إضافة معالج الرسائل النصية
+    application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    
+    print("إيفي بدأت العمل الآن...")
     application.run_polling()
 
 if __name__ == "__main__":
