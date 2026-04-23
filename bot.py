@@ -17,7 +17,7 @@ def keep_alive():
     t.start()
 
 # --- إعدادات البوت والتوكن ---
-TOKEN = os.environ.get("PUT_YOUR_BOT_TOKEN_HERE") or os.environ.get("TELEGRAM_TOKEN")
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
 BOT_NAMES = ["ايفي", "إيفي", "evie", "Evie"]
 
 # ذاكرة بسيطة وردود ساخرة
